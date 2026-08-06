@@ -20,7 +20,8 @@ class TuningOverlayController extends GetxController {
   final opacityMode = TuningOpacityMode.opaque.obs;
 
   // Session Timer State (in seconds)
-  final secondsRemaining = (2 * 3600).obs; // Default 2 Hours (7200s)
+  final configuredTimerSeconds = (2 * 3600).obs; // Configured Limit (Default 2h)
+  final secondsRemaining = (2 * 3600).obs;
   final isTimerRunning = false.obs;
   final isSessionExpired = false.obs;
 
@@ -29,8 +30,15 @@ class TuningOverlayController extends GetxController {
 
   Timer? _countdownTimer;
 
+  void setCustomTimerMinutes(int minutes) {
+    final secs = minutes * 60;
+    configuredTimerSeconds.value = secs;
+    resetTimer(secs);
+  }
+
   void startTimer([int? initialSeconds]) {
     if (initialSeconds != null) {
+      configuredTimerSeconds.value = initialSeconds;
       secondsRemaining.value = initialSeconds;
     }
     isTimerRunning.value = true;
@@ -52,9 +60,12 @@ class TuningOverlayController extends GetxController {
     _countdownTimer?.cancel();
   }
 
-  void resetTimer([int seconds = 7200]) {
+  void resetTimer([int? seconds]) {
     pauseTimer();
-    secondsRemaining.value = seconds;
+    if (seconds != null) {
+      configuredTimerSeconds.value = seconds;
+    }
+    secondsRemaining.value = configuredTimerSeconds.value;
     isSessionExpired.value = false;
   }
 

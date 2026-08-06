@@ -20,10 +20,13 @@ class TuningToolbarMenu extends StatefulWidget {
 
 class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
   final TextEditingController _textController = TextEditingController();
+  final TextEditingController _timerMinutesController =
+      TextEditingController(text: '120');
 
   @override
   void dispose() {
     _textController.dispose();
+    _timerMinutesController.dispose();
     super.dispose();
   }
 
@@ -251,9 +254,9 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'SESSION TIMER (2h Limit)',
-                          style: TextStyle(
+                        Text(
+                          'SESSION TIMER (${(controller.configuredTimerSeconds.value / 60).round()}m Limit)',
+                          style: const TextStyle(
                             color: Color(0xFFA0A5B5),
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -271,6 +274,124 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                       ],
                     ),
                     const SizedBox(height: 8),
+
+                    // Quick Preset Chips (15m, 30m, 1h, 2h, 4h)
+                    Row(
+                      children: [
+                        _buildPresetChip(
+                          label: '15m',
+                          minutes: 15,
+                          controller: controller,
+                        ),
+                        const SizedBox(width: 4),
+                        _buildPresetChip(
+                          label: '30m',
+                          minutes: 30,
+                          controller: controller,
+                        ),
+                        const SizedBox(width: 4),
+                        _buildPresetChip(
+                          label: '1h',
+                          minutes: 60,
+                          controller: controller,
+                        ),
+                        const SizedBox(width: 4),
+                        _buildPresetChip(
+                          label: '2h',
+                          minutes: 120,
+                          controller: controller,
+                        ),
+                        const SizedBox(width: 4),
+                        _buildPresetChip(
+                          label: '4h',
+                          minutes: 240,
+                          controller: controller,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Custom Minutes Input + Apply Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 30,
+                            child: TextField(
+                              controller: _timerMinutesController,
+                              keyboardType: TextInputType.number,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Custom mins',
+                                hintStyle: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 0,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF121316),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2A2D36),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2A2D36),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF00E676),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00E676),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            minimumSize: const Size(0, 30),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          onPressed: () {
+                            final mins = int.tryParse(
+                              _timerMinutesController.text.trim(),
+                            );
+                            if (mins != null && mins > 0) {
+                              controller.setCustomTimerMinutes(mins);
+                            }
+                          },
+                          child: const Text(
+                            'Set Limit',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
                     Row(
                       children: [
                         Expanded(
@@ -316,7 +437,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                                 horizontal: 12, vertical: 8),
                           ),
                           onPressed: () {
-                            controller.resetTimer(7200); // 2 hours
+                            controller.resetTimer();
                           },
                           child: const Text('Reset',
                               style: TextStyle(fontSize: 12)),
@@ -398,6 +519,47 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
               style: TextStyle(
                 color: isSelected ? Colors.black : Colors.white70,
                 fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPresetChip({
+    required String label,
+    required int minutes,
+    required TuningOverlayController controller,
+  }) {
+    final bool isSelected =
+        (controller.configuredTimerSeconds.value / 60).round() == minutes;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          _timerMinutesController.text = minutes.toString();
+          controller.setCustomTimerMinutes(minutes);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFF00E676)
+                : const Color(0xFF121318),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF00E676)
+                  : const Color(0xFF2A2D36),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.black : Colors.white70,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
