@@ -7,6 +7,7 @@ import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:get/get.dart';
+import 'package:flutter_hbb/common/widgets/disclaimer_dialog.dart';
 import 'package:window_manager/window_manager.dart';
 // import 'package:flutter/services.dart';
 
@@ -68,7 +69,11 @@ class _DesktopTabPageState extends State<DesktopTabPage> {
   @override
   void initState() {
     super.initState();
-    // HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!stateGlobal.isDisclaimerAccepted.value) {
+        showDisclaimerDialog(context);
+      }
+    });
   }
 
   /*

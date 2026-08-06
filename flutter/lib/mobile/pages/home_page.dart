@@ -4,6 +4,7 @@ import 'package:flutter_hbb/mobile/pages/settings_page.dart';
 import 'package:flutter_hbb/web/settings_page.dart';
 import 'package:get/get.dart';
 import '../../common.dart';
+import '../../common/widgets/disclaimer_dialog.dart';
 import '../../common/widgets/chat_page.dart';
 import '../../models/platform_model.dart';
 import '../../models/state_model.dart';
@@ -43,6 +44,11 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initPages();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!stateGlobal.isDisclaimerAccepted.value) {
+        showDisclaimerDialog(context);
+      }
+    });
   }
 
   void initPages() {

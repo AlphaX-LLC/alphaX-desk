@@ -22,6 +22,7 @@ class StateGlobal {
   // for mobile and web
   bool isInMainPage = true;
   bool isWebVisible = true;
+  final RxBool isDisclaimerAccepted = false.obs;
 
   final isPortrait = false.obs;
 
