@@ -34,65 +34,132 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
   Widget build(BuildContext context) {
     final controller = TuningOverlayController.instance;
 
-    return PopupMenuButton<void>(
-      tooltip: 'AlphaX Tuner Control Panel',
-      icon: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE53935).withOpacity(0.2),
-          shape: BoxShape.circle,
+    return Obx(() {
+      final activeColor = _getStatusColor(controller.status.value);
+      return PopupMenuButton<void>(
+        tooltip: 'AlphaX Tuner Control Panel',
+        icon: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: activeColor.withOpacity(0.2),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.traffic,
+            color: activeColor,
+            size: 18,
+          ),
         ),
-        child: const Icon(
-          Icons.traffic,
-          color: Color(0xFFE53935),
-          size: 18,
+        color: const Color(0xFF1B1C22),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF2A2D36)),
         ),
-      ),
-      color: const Color(0xFF1B1C22),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFF2A2D36)),
-      ),
-      offset: const Offset(0, 40),
-      itemBuilder: (BuildContext ctx) {
-        return [
-          PopupMenuItem<void>(
-            enabled: false,
-            child: SizedBox(
-              width: 320,
-              child: Obx(() {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Row(
-                      children: const [
-                        Icon(Icons.tune, color: Color(0xFF00E676), size: 18),
-                        SizedBox(width: 8),
-                        Text(
-                          'AlphaX Tuner Overlay Controls',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+        offset: const Offset(0, 40),
+        itemBuilder: (BuildContext ctx) {
+          return [
+            PopupMenuItem<void>(
+              enabled: false,
+              child: SizedBox(
+                width: 320,
+                child: Obx(() {
+                  final curStatus = controller.status.value;
+                  final statusColor = _getStatusColor(curStatus);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header
+                      Row(
+                        children: const [
+                          Icon(Icons.tune, color: Color(0xFF00E676), size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'AlphaX Tuner Overlay Controls',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      // Live Feedback Box for Tuner
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF121318),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: statusColor.withOpacity(0.6),
+                            width: 1.5,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(color: Color(0xFF2A2D36)),
-                    const SizedBox(height: 8),
-
-                    // Status Presets Title
-                    const Text(
-                      'STATUS LIGHT PRESETS',
-                      style: TextStyle(
-                        color: Color(0xFFA0A5B5),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  _getStatusIcon(curStatus),
+                                  color: statusColor,
+                                  size: 15,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    curStatus == TuningOverlayStatus.off
+                                        ? 'OVERLAY OFF'
+                                        : 'CLIENT OVERLAY: ${_getStatusTitle(curStatus)}',
+                                    style: TextStyle(
+                                      color: statusColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Text(
+                                  _getOpacityLabel(controller.opacityMode.value),
+                                  style: const TextStyle(
+                                    color: Color(0xFFA0A5B5),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (controller.customText.value.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                '"${controller.customText.value}"',
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 10,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      const Divider(color: Color(0xFF2A2D36)),
+                      const SizedBox(height: 8),
+
+                      // Status Presets Title
+                      const Text(
+                        'STATUS LIGHT PRESETS',
+                        style: TextStyle(
+                          color: Color(0xFFA0A5B5),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     const SizedBox(height: 8),
 
                     // Traffic Light Buttons
@@ -452,7 +519,8 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
         ];
       },
     );
-  }
+  });
+}
 
   Widget _buildStatusButton({
     required String title,
@@ -574,5 +642,61 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
     final int minutes = (totalSeconds % 3600) ~/ 60;
     final int seconds = totalSeconds % 60;
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Color _getStatusColor(TuningOverlayStatus status) {
+    switch (status) {
+      case TuningOverlayStatus.red:
+        return const Color(0xFFE53935);
+      case TuningOverlayStatus.yellow:
+        return const Color(0xFFFFB300);
+      case TuningOverlayStatus.green:
+        return const Color(0xFF00E676);
+      case TuningOverlayStatus.custom:
+        return const Color(0xFF0071FF);
+      case TuningOverlayStatus.off:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(TuningOverlayStatus status) {
+    switch (status) {
+      case TuningOverlayStatus.red:
+        return Icons.do_not_disturb_on;
+      case TuningOverlayStatus.yellow:
+        return Icons.pause_circle_filled;
+      case TuningOverlayStatus.green:
+        return Icons.play_circle_fill;
+      case TuningOverlayStatus.custom:
+        return Icons.info;
+      case TuningOverlayStatus.off:
+        return Icons.circle_outlined;
+    }
+  }
+
+  String _getStatusTitle(TuningOverlayStatus status) {
+    switch (status) {
+      case TuningOverlayStatus.red:
+        return 'RED - STOP';
+      case TuningOverlayStatus.yellow:
+        return 'YELLOW - IN PROGRESS';
+      case TuningOverlayStatus.green:
+        return 'GREEN - TEST RUN READY';
+      case TuningOverlayStatus.custom:
+        return 'CUSTOM NOTICE';
+      case TuningOverlayStatus.off:
+        return 'OFF';
+    }
+  }
+
+  String _getOpacityLabel(TuningOpacityMode mode) {
+    switch (mode) {
+      case TuningOpacityMode.opaque:
+        return '100% Solid';
+      case TuningOpacityMode.semiTransparent:
+        return '30% Banner';
+      case TuningOpacityMode.hidden:
+        return 'Hidden';
+    }
   }
 }

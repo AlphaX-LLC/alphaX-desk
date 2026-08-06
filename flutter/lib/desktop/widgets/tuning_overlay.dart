@@ -114,28 +114,33 @@ class TuningOverlayWidget extends StatelessWidget {
               : 1.0;
 
       return Positioned(
-        top: 20,
-        left: 40,
-        right: 40,
+        top: 0,
+        left: 0,
+        right: 0,
         child: Opacity(
           opacity: opacity,
           child: Material(
-            elevation: 12,
-            borderRadius: BorderRadius.circular(12),
+            elevation: 16,
             color: Colors.transparent,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF1B1C22),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _getStatusColor(controller.status.value),
-                  width: 2,
+                color: const Color(0xFF111216).withOpacity(0.95),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(12),
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: _getStatusColor(controller.status.value),
+                    width: 3,
+                  ),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: _getStatusColor(controller.status.value).withOpacity(0.4),
-                    blurRadius: 16,
+                    color:
+                        _getStatusColor(controller.status.value).withOpacity(0.4),
+                    blurRadius: 20,
                     spreadRadius: 2,
                   ),
                 ],
