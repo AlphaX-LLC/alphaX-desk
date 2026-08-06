@@ -15,6 +15,7 @@ import 'package:flutter_hbb/desktop/screen/desktop_view_camera_screen.dart';
 import 'package:flutter_hbb/desktop/screen/desktop_port_forward_screen.dart';
 import 'package:flutter_hbb/desktop/screen/desktop_remote_screen.dart';
 import 'package:flutter_hbb/desktop/screen/desktop_terminal_screen.dart';
+import 'package:flutter_hbb/desktop/screen/desktop_tuning_overlay_screen.dart';
 import 'package:flutter_hbb/desktop/widgets/refresh_wrapper.dart';
 import 'package:flutter_hbb/models/state_model.dart';
 import 'package:flutter_hbb/utils/multi_window_manager.dart';
@@ -99,6 +100,14 @@ Future<void> main(List<String> args) async {
           argument,
           kAppTypeDesktopTerminal,
         );
+        break;
+      case WindowType.TuningOverlay:
+        desktopType = DesktopType.tuningOverlay;
+        runMultiWindow(
+          argument,
+          kAppTypeDesktopTuningOverlay,
+        );
+        break;
       default:
         break;
     }
@@ -230,6 +239,11 @@ void runMultiWindow(
         params: argument,
       );
       break;
+    case kAppTypeDesktopTuningOverlay:
+      widget = DesktopTuningOverlayScreen(
+        params: argument,
+      );
+      break;
     default:
       // no such appType
       exit(0);
@@ -279,12 +293,18 @@ void runMultiWindow(
     case kAppTypeDesktopTerminal:
       await restoreWindowPosition(WindowType.Terminal, windowId: kWindowId!);
       break;
+    case kAppTypeDesktopTuningOverlay:
+      // The overlay window controls its own visibility/bounds based on
+      // the tuning state (hidden until there is something to show).
+      break;
     default:
       // no such appType
       exit(0);
   }
-  // show window from hidden status
-  WindowController.fromWindowId(kWindowId!).show();
+  if (appType != kAppTypeDesktopTuningOverlay) {
+    // show window from hidden status
+    WindowController.fromWindowId(kWindowId!).show();
+  }
 }
 
 void runConnectionManagerScreen() async {

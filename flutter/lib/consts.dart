@@ -52,6 +52,7 @@ const String kAppTypeDesktopFileTransfer = "file transfer";
 const String kAppTypeDesktopViewCamera = "view camera";
 const String kAppTypeDesktopPortForward = "port forward";
 const String kAppTypeDesktopTerminal = "terminal";
+const String kAppTypeDesktopTuningOverlay = "tuning overlay";
 
 const String kWindowMainWindowOnTop = "main_window_on_top";
 const String kWindowRefreshCurrentUser = "refresh_current_user";
@@ -81,6 +82,7 @@ const String kWindowEventSetFullscreen = "set_fullscreen";
 const String kWindowEventMoveTabToNewWindow = "move_tab_to_new_window";
 const String kWindowEventGetCachedSessionData = "get_cached_session_data";
 const String kWindowEventOpenMonitorSession = "open_monitor_session";
+const String kWindowEventUpdateTuningOverlay = "update_tuning_overlay";
 
 const String kOptionViewStyle = "view_style";
 const String kOptionScrollStyle = "scroll_style";

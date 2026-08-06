@@ -18,6 +18,7 @@ enum WindowType {
   ViewCamera,
   PortForward,
   Terminal,
+  TuningOverlay,
   Unknown
 }
 
@@ -36,6 +37,8 @@ extension Index on int {
         return WindowType.PortForward;
       case 5:
         return WindowType.Terminal;
+      case 6:
+        return WindowType.TuningOverlay;
       default:
         return WindowType.Unknown;
     }
@@ -65,6 +68,59 @@ class RustDeskMultiWindowManager {
   final List<int> _viewCameraWindows = List.empty(growable: true);
   final List<int> _portForwardWindows = List.empty(growable: true);
   final List<int> _terminalWindows = List.empty(growable: true);
+
+  // Tracks the single dedicated always-on-top window used to render the
+  // AlphaX tuning overlay banner on this machine. Only meaningful when
+  // called from the Connection Manager (`--cm`) process, which is the
+  // process that actually receives the tuner's overlay updates.
+  int? _tuningOverlayWindowId;
+
+  /// Pushes the latest AlphaX tuning overlay state (JSON-encoded) to the
+  /// dedicated overlay window, creating it on first use.
+  Future<void> pushTuningOverlayState(String jsonPayload) async {
+    if (_tuningOverlayWindowId == null) {
+      try {
+        final params = {
+          'type': WindowType.TuningOverlay.index,
+          'overlay': jsonPayload,
+        };
+        final windowController =
+            await DesktopMultiWindow.createWindow(jsonEncode(params));
+        _tuningOverlayWindowId = windowController.windowId;
+        if (isMacOS) {
+          Future.microtask(() => windowController.show());
+        }
+      } catch (e) {
+        debugPrint('[AlphaX Overlay] Failed to create overlay window: $e');
+        _tuningOverlayWindowId = null;
+      }
+      return;
+    }
+    try {
+      await DesktopMultiWindow.invokeMethod(
+        _tuningOverlayWindowId!,
+        kWindowEventUpdateTuningOverlay,
+        jsonPayload,
+      );
+    } catch (e) {
+      debugPrint(
+          '[AlphaX Overlay] Failed to update overlay window, recreating: $e');
+      _tuningOverlayWindowId = null;
+      await pushTuningOverlayState(jsonPayload);
+    }
+  }
+
+  Future<void> closeTuningOverlayWindow() async {
+    final windowId = _tuningOverlayWindowId;
+    if (windowId == null) return;
+    _tuningOverlayWindowId = null;
+    try {
+      await WindowController.fromWindowId(windowId).setPreventClose(false);
+      await WindowController.fromWindowId(windowId).close();
+    } catch (e) {
+      debugPrint('[AlphaX Overlay] Failed to close overlay window: $e');
+    }
+  }
 
   moveTabToNewWindow(int windowId, String peerId, String sessionId,
       WindowType windowType) async {
@@ -415,6 +471,10 @@ class RustDeskMultiWindowManager {
         return _portForwardWindows;
       case WindowType.Terminal:
         return _terminalWindows;
+      case WindowType.TuningOverlay:
+        // Managed separately via `_tuningOverlayWindowId`, not through the
+        // generic tracked-window lists.
+        break;
       case WindowType.Unknown:
         break;
     }
@@ -439,6 +499,9 @@ class RustDeskMultiWindowManager {
         break;
       case WindowType.Terminal:
         _terminalWindows.clear();
+        break;
+      case WindowType.TuningOverlay:
+        break;
       case WindowType.Unknown:
         break;
     }

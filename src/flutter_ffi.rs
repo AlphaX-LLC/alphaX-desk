@@ -661,6 +661,7 @@ pub fn session_input_string(session_id: SessionID, value: String) {
 
 // chat_client_mode
 pub fn session_send_chat(session_id: SessionID, text: String) {
+    log::info!("[AlphaX Sync] session_send_chat: {}", text);
     if let Some(session) = sessions::get_session_by_session_id(&session_id) {
         session.send_chat(text);
     }

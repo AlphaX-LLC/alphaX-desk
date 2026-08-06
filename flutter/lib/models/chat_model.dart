@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -8,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common/shared_state.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
-import 'package:flutter_hbb/desktop/widgets/tuning_overlay.dart';
 import 'package:flutter_hbb/mobile/pages/home_page.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
+import 'package:flutter_hbb/utils/multi_window_manager.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 import 'package:window_manager/window_manager.dart';
@@ -348,14 +347,15 @@ class ChatModel with ChangeNotifier {
 
   receive(int id, String text) async {
     if (text.startsWith('ALPHAX_OVERLAY:')) {
-      try {
-        final payload = text.substring('ALPHAX_OVERLAY:'.length);
-        final data = jsonDecode(payload) as Map<String, dynamic>;
-        TuningOverlayController.instance.updateFromJson(data);
-        return;
-      } catch (e) {
-        debugPrint('[AlphaX Overlay] Parse error: $e');
+      final payload = text.substring('ALPHAX_OVERLAY:'.length);
+      // Forward to the dedicated always-on-top overlay window, which is
+      // what's actually visible on the client's screen. This process (CM)
+      // receives the update but does not render it itself: its own window
+      // is frequently hidden/minimized while a session is active.
+      if (isDesktop) {
+        unawaited(rustDeskWinManager.pushTuningOverlayState(payload));
       }
+      return;
     }
 
     final session = parent.target;

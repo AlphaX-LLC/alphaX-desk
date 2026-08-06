@@ -111,6 +111,7 @@ enum DesktopType {
   terminal,
   cm,
   portForward,
+  tuningOverlay,
 }
 
 bool isDoubleEqual(double a, double b) {

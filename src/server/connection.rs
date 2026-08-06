@@ -3657,6 +3657,7 @@ impl Connection {
                         }
                     }
                     Some(misc::Union::ChatMessage(c)) => {
+                        log::info!("[AlphaX Sync] Received ChatMessage: {}", c.text);
                         self.send_to_cm(ipc::Data::ChatMessage { text: c.text });
                         self.chat_unanswered = true;
                         self.update_auto_disconnect_timer();

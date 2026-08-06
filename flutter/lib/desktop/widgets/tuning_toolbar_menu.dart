@@ -1,5 +1,5 @@
-import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:get/get.dart';
 import '../../models/model.dart';
 import './tuning_overlay.dart';
@@ -719,13 +719,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
     try {
       final payload =
           'ALPHAX_OVERLAY:${TuningOverlayController.instance.toJsonPayload()}';
-      widget.ffi.chatModel.send(
-        ChatMessage(
-          text: payload,
-          user: widget.ffi.chatModel.me,
-          createdAt: DateTime.now(),
-        ),
-      );
+      bind.sessionSendChat(sessionId: widget.ffi.sessionId, text: payload);
     } catch (e) {
       debugPrint('[AlphaX Sync Error] $e');
     }

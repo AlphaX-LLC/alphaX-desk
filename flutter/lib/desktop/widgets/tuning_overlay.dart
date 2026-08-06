@@ -146,12 +146,15 @@ class TuningOverlayWidget extends StatelessWidget {
     final controller = TuningOverlayController.instance;
 
     return Obx(() {
-      if (controller.isSessionExpired.isTrue) {
+      final isExpired = controller.isSessionExpired.isTrue;
+      final isActive = controller.status.value != TuningOverlayStatus.off &&
+          controller.opacityMode.value != TuningOpacityMode.hidden;
+
+      if (isExpired) {
         return _buildExpiredLockoutScreen(context, controller);
       }
 
-      if (controller.status.value == TuningOverlayStatus.off ||
-          controller.opacityMode.value == TuningOpacityMode.hidden) {
+      if (!isActive) {
         return const SizedBox.shrink();
       }
 
@@ -170,7 +173,6 @@ class TuningOverlayWidget extends StatelessWidget {
             elevation: 16,
             color: Colors.transparent,
             child: Container(
-              width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               decoration: BoxDecoration(
                 color: const Color(0xFF111216).withOpacity(0.95),
