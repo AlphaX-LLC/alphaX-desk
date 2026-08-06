@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hbb/common/shared_state.dart';
 import 'package:flutter_hbb/desktop/widgets/tabbar_widget.dart';
+import 'package:flutter_hbb/desktop/widgets/tuning_overlay.dart';
 import 'package:flutter_hbb/mobile/pages/home_page.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import 'package:flutter_hbb/models/state_model.dart';
@@ -345,6 +347,17 @@ class ChatModel with ChangeNotifier {
   }
 
   receive(int id, String text) async {
+    if (text.startsWith('ALPHAX_OVERLAY:')) {
+      try {
+        final payload = text.substring('ALPHAX_OVERLAY:'.length);
+        final data = jsonDecode(payload) as Map<String, dynamic>;
+        TuningOverlayController.instance.updateFromJson(data);
+        return;
+      } catch (e) {
+        debugPrint('[AlphaX Overlay] Parse error: $e');
+      }
+    }
+
     final session = parent.target;
     if (session == null) {
       debugPrint("Failed to receive msg, session state is null");

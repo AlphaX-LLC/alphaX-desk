@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,6 +30,52 @@ class TuningOverlayController extends GetxController {
   final chatMessages = <String>[].obs;
 
   Timer? _countdownTimer;
+
+  String toJsonPayload() {
+    return jsonEncode({
+      'type': 'ALPHAX_OVERLAY',
+      'status': status.value.name,
+      'text': customText.value,
+      'opacity': opacityMode.value.name,
+      'secondsRemaining': secondsRemaining.value,
+      'timerRunning': isTimerRunning.value,
+      'sessionExpired': isSessionExpired.value,
+    });
+  }
+
+  void updateFromJson(Map<String, dynamic> json) {
+    if (json['status'] != null) {
+      final sName = json['status'] as String;
+      status.value = TuningOverlayStatus.values.firstWhere(
+        (e) => e.name == sName,
+        orElse: () => TuningOverlayStatus.off,
+      );
+    }
+    if (json['text'] != null) {
+      customText.value = json['text'] as String;
+    }
+    if (json['opacity'] != null) {
+      final oName = json['opacity'] as String;
+      opacityMode.value = TuningOpacityMode.values.firstWhere(
+        (e) => e.name == oName,
+        orElse: () => TuningOpacityMode.opaque,
+      );
+    }
+    if (json['secondsRemaining'] != null) {
+      secondsRemaining.value = json['secondsRemaining'] as int;
+    }
+    if (json['timerRunning'] != null) {
+      final running = json['timerRunning'] as bool;
+      if (running && !isTimerRunning.value) {
+        startTimer();
+      } else if (!running && isTimerRunning.value) {
+        pauseTimer();
+      }
+    }
+    if (json['sessionExpired'] != null) {
+      isSessionExpired.value = json['sessionExpired'] as bool;
+    }
+  }
 
   void setCustomTimerMinutes(int minutes) {
     final secs = minutes * 60;

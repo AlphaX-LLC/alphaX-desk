@@ -1,3 +1,4 @@
+import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../models/model.dart';
@@ -174,6 +175,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                             controller.setOverlayState(
                               statusVal: TuningOverlayStatus.red,
                             );
+                            _syncToClient();
                           },
                         ),
                         const SizedBox(width: 6),
@@ -186,6 +188,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                             controller.setOverlayState(
                               statusVal: TuningOverlayStatus.yellow,
                             );
+                            _syncToClient();
                           },
                         ),
                         const SizedBox(width: 6),
@@ -198,6 +201,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                             controller.setOverlayState(
                               statusVal: TuningOverlayStatus.green,
                             );
+                            _syncToClient();
                           },
                         ),
                         const SizedBox(width: 6),
@@ -210,6 +214,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                             controller.setOverlayState(
                               statusVal: TuningOverlayStatus.off,
                             );
+                            _syncToClient();
                           },
                         ),
                       ],
@@ -266,6 +271,7 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                                 statusVal: TuningOverlayStatus.custom,
                                 text: _textController.text.trim(),
                               );
+                              _syncToClient();
                             }
                           },
                           child: const Text('Send',
@@ -292,24 +298,33 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
                           label: '100% Solid',
                           mode: TuningOpacityMode.opaque,
                           currentMode: controller.opacityMode.value,
-                          onPressed: () => controller.opacityMode.value =
-                              TuningOpacityMode.opaque,
+                          onPressed: () {
+                            controller.opacityMode.value =
+                                TuningOpacityMode.opaque;
+                            _syncToClient();
+                          },
                         ),
                         const SizedBox(width: 6),
                         _buildOpacityChip(
                           label: '30% Banner',
                           mode: TuningOpacityMode.semiTransparent,
                           currentMode: controller.opacityMode.value,
-                          onPressed: () => controller.opacityMode.value =
-                              TuningOpacityMode.semiTransparent,
+                          onPressed: () {
+                            controller.opacityMode.value =
+                                TuningOpacityMode.semiTransparent;
+                            _syncToClient();
+                          },
                         ),
                         const SizedBox(width: 6),
                         _buildOpacityChip(
                           label: 'Hidden',
                           mode: TuningOpacityMode.hidden,
                           currentMode: controller.opacityMode.value,
-                          onPressed: () => controller.opacityMode.value =
-                              TuningOpacityMode.hidden,
+                          onPressed: () {
+                            controller.opacityMode.value =
+                                TuningOpacityMode.hidden;
+                            _syncToClient();
+                          },
                         ),
                       ],
                     ),
@@ -697,6 +712,22 @@ class _TuningToolbarMenuState extends State<TuningToolbarMenu> {
         return '30% Banner';
       case TuningOpacityMode.hidden:
         return 'Hidden';
+    }
+  }
+
+  void _syncToClient() {
+    try {
+      final payload =
+          'ALPHAX_OVERLAY:${TuningOverlayController.instance.toJsonPayload()}';
+      widget.ffi.chatModel.send(
+        ChatMessage(
+          text: payload,
+          user: widget.ffi.chatModel.me,
+          createdAt: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[AlphaX Sync Error] $e');
     }
   }
 }
